@@ -1,4 +1,5 @@
 #![no_std]
+#![no_main]
 
 use crate::csr8645::csr8645::{Csr8645, Csr8645Error};
 use alloc::string::String;
