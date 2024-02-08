@@ -1,10 +1,10 @@
 #![no_std]
 #![no_main]
 
-use alloc::string::String;
-use alloc::vec::Vec;
 use crate::bluetooth::bluetooth_service::BluetoothService;
 use crate::csr8645::csr8645::Csr8645Error;
+use alloc::string::String;
+use alloc::vec::Vec;
 
 /// `BluetoothController` is a struct that controls the Bluetooth services.
 ///

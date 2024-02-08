@@ -211,7 +211,8 @@ impl Csr8645 {
         let mut buf = [0u8; 64];
         self.read_response(&mut buf).await?;
 
-        let response = String::from_utf8(buf.to_vec()).map_err(|_| Csr8645Error::InvalidResponse)?;
+        let response =
+            String::from_utf8(buf.to_vec()).map_err(|_| Csr8645Error::InvalidResponse)?;
         Ok(response.contains("OK+CON"))
     }
 
@@ -228,7 +229,8 @@ impl Csr8645 {
         let mut buf = [0u8; 512];
         self.read_response(&mut buf).await?;
 
-        let response = String::from_utf8(buf.to_vec()).map_err(|_| Csr8645Error::InvalidResponse)?;
+        let response =
+            String::from_utf8(buf.to_vec()).map_err(|_| Csr8645Error::InvalidResponse)?;
         let addresses = response.split('\n').map(|s| s.to_string()).collect();
         Ok(addresses)
     }

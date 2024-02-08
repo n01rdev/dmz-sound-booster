@@ -12,10 +12,10 @@ use embassy_time::Duration;
 use embassy_time::Timer;
 use panic_probe as _;
 
+mod audio;
 mod bluetooth;
 mod csr8645;
 mod uart;
-mod audio;
 
 /// The `main` function is the main entry point for the application.
 ///
