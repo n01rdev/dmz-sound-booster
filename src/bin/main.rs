@@ -21,7 +21,7 @@ use obd::obd_controller::ObdController;
 
 /// The `App` struct represents the main application.
 ///
-/// It contains all the components of the application, such as the Bluetooth module and the OBD-II device.
+/// It contains all the components of the application, such as the Bluetooth module and the OBD-II Module.
 struct App<'a> {
     bluetooth_module: BluetoothController<'a, Csr8645>,
     obd_module: ObdController,
@@ -31,10 +31,15 @@ impl<'a> App<'a> {
     /// Creates a new `App` instance.
     ///
     /// Initializes the Bluetooth module and the OBD-II device.
-    fn new() -> Self {
+    ///
+    /// # Arguments
+    ///
+    /// * `bluetooth_module` - An instance of `BluetoothController`.
+    /// * `obd_module` - An instance of `ObdController`.
+    fn new(bluetooth_module: BluetoothController<'a, Csr8645>, obd_module: ObdController) -> Self {
         Self {
-            bluetooth_module: BluetoothController::new(Csr8645::new()),
-            obd_module: ObdController::new(),
+            bluetooth_module,
+            obd_module,
         }
     }
 
@@ -43,26 +48,24 @@ impl<'a> App<'a> {
     /// In a loop, it reads the speed and RPM data from the OBD-II device, determines how to alter the audio behavior based on this data, and then alters the audio behavior.
     async fn run(&self) {
         loop {
-            // Read the speed and RPM data from the OBD-II device
             let speed = self.obd_module.read_speed().await;
             let rpm = self.obd_module.read_rpm().await;
-
-            // Determine how to alter the audio behavior
             let audio_behavior = map_sensor_data_to_audio_behavior(speed, rpm);
-
-            // Alter the audio behavior
             self.bluetooth_module
                 .alter_behavior(audio_behavior)
                 .await
                 .unwrap();
         }
     }
+}
 
-    #[embassy_executor::task]
-    async fn run_app() {
-        let app = Self::new();
-        app.run().await;
-    }
+#[embassy_executor::task]
+async fn run_app() {
+    let csr8645 = Csr8645::new().unwrap();
+    let bluetooth_module = BluetoothController::new(csr8645);
+    let obd_module = ObdController::new();
+    let app = App::new(bluetooth_module, obd_module);
+    app.run().await;
 }
 
 /// The `main` function is the main entry point for the application.
@@ -76,14 +79,20 @@ impl<'a> App<'a> {
 /// # Errors
 ///
 /// Returns an error if the peripherals fail to initialize.
+///
+/// If the app fails to run, an error is logged.
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
     let config = Config::default();
+
     if let Err(e) = init(config) {
         error!("Failed to initialize peripherals: {:?}", e);
         return;
     };
     info!("Peripherals initialized successfully");
 
-    spawner.spawn(App::run_app()).unwrap();
+    if let Err(e) = spawner.spawn(run_app()).unwrap() {
+        error!("Failed to run app: {:?}", e);
+    }
+    info!("App started successfully");
 }
