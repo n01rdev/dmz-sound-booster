@@ -57,6 +57,12 @@ impl<'a> App<'a> {
                 .unwrap();
         }
     }
+
+    #[embassy_executor::task]
+    async fn run_app() {
+        let app = Self::new();
+        app.run().await;
+    }
 }
 
 /// The `main` function is the main entry point for the application.
@@ -79,6 +85,5 @@ async fn main(spawner: Spawner) {
     };
     info!("Peripherals initialized successfully");
 
-    let app = App::new();
-    spawner.spawn(app.run()).unwrap();
+    spawner.spawn(App::run_app()).unwrap();
 }
